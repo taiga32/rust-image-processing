@@ -3,5 +3,12 @@
 version = 4
 
 [[package]]
-name = "hello_world"
+name = "ch04"
+version = "0.1.0"
+dependencies = [
+ "image_core",
+]
+
+[[package]]
+name = "image_core"
 version = "0.1.0"
