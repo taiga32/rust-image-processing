@@ -9,35 +9,42 @@ pub fn resize_image(img: &DynamicImage, width: u32, height: u32) -> DynamicImage
     img.resize(width, height, image::imageops::FilterType::Nearest)
 }
 
-pub fn display_image(img: &DynamicImage) {
-    let resized_img = resize_image(img, 800, 800);
+pub fn image_to_grayscale(img: &DynamicImage) -> ImageBuffer<image::Luma<u8>, Vec<u8>> {
+    img.to_luma8()
+}
+
+pub fn display_image(img: &DynamicImage, img_gray: &ImageBuffer<image::Luma<u8>, Vec<u8>>) {
+    let resized_img = resize_image(img, 400, 400);
     let rgb = resized_img.to_rgb8();
     let (w, h) = (resized_img.width() as usize, resized_img.height() as usize);
+    let resized_gray =
+        resize_image(&DynamicImage::ImageLuma8(img_gray.clone()), 400, 400).to_luma8();
 
-    let buffer: Vec<u32> = rgb
+    let mut buffer: Vec<u32> = rgb
         .pixels()
         .map(|p| ((p[0] as u32) << 16) | ((p[1] as u32) << 8) | (p[2] as u32))
         .collect();
 
-    let mut window: Window = Window::new("Preview - ESC to close", w, h, WindowOptions::default())
-        .expect("Failed to create window");
+    buffer.extend(
+        resized_gray
+            .pixels()
+            .map(|p| {
+                let v = p[0] as u32;
+                (v << 16) | (v << 8) | v
+            })
+            .collect::<Vec<u32>>(),
+    );
+
+    let total_h = h * 2;
+    let mut window: Window = Window::new(
+        "Preview - ESC to close",
+        w,
+        total_h,
+        WindowOptions::default(),
+    )
+    .expect("Failed to create window");
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
-        window.update_with_buffer(&buffer, w, h).unwrap();
+        window.update_with_buffer(&buffer, w, total_h).unwrap();
     }
 }
-
-// pub fn add(a: i32, b: i32) -> i32 {
-//     a + b
-// }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-
-//     #[test]
-//     fn it_works() {
-//         let result = add(2, 2);
-//         assert_eq!(result, 4);
-//     }
-// }
