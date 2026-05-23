@@ -1,2 +1,3 @@
 [workspace]
 members = ["chapters/ch04", "image_core"]
+resolver = "3"
